@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>파이썬 마스터 클래스룸 — 15차시 인터랙티브 교육 포털</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Pretendard:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- 경량 Markdown 파서 (marked.js) -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body class="theme-light">
+    <!-- 전체 레이아웃 컨테이너 -->
+    <div class="app-layout">
+        
+        <!-- 좌측 사이드바: 커리큘럼 및 진도 관리 -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="brand">
+                    <span class="brand-logo">🐍</span>
+                    <div>
+                        <h2 class="brand-title">Python Class</h2>
+                        <span class="brand-badge">청년·성인 입문</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 학습 진도 현황 카드 -->
+            <div class="progress-card">
+                <div class="progress-header">
+                    <span class="progress-label">전체 학습 달성률</span>
+                    <span class="progress-percent" id="totalPercent">0%</span>
+                </div>
+                <div class="progress-bar-track">
+                    <div class="progress-bar-fill" id="totalProgressBar"></div>
+                </div>
+                <div class="progress-meta">
+                    <span id="completedCountText">0 / 16 차시 완료</span>
+                    <button class="btn-text-reset" id="btnResetProgress" title="진도 초기화">초기화</button>
+                </div>
+            </div>
+
+            <!-- 차시 목록 (아코디언 형태) -->
+            <nav class="curriculum-nav" id="curriculumNav">
+                <!-- 자바스크립트로 동적 렌더링 -->
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user-guide-tip">
+                    <span>💡 팁: 코드를 직접 수정하고 [실행]해보세요!</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 사이드바 토글 버튼 (모바일) -->
+        <button class="mobile-toggle-btn" id="mobileToggleBtn" aria-label="메뉴 열기">☰</button>
+
+        <!-- 메인 콘텐츠 영역 -->
+        <main class="main-content">
+            <!-- 상단 바 -->
+            <header class="top-bar">
+                <div class="current-lesson-info">
+                    <span class="day-chip" id="currentDayChip">Day 1</span>
+                    <h1 class="lesson-header-title" id="currentLessonTitle">로딩 중...</h1>
+                </div>
+
+                <div class="top-bar-actions">
+                    <button class="btn-action-complete" id="btnToggleComplete">
+                        <span class="check-icon">✓</span>
+                        <span id="completeBtnText">학습 완료로 표시</span>
+                    </button>
+                    <button class="btn-icon" id="btnThemeToggle" title="테마 변경 (다크/라이트)">
+                        🌓
+                    </button>
+                </div>
+            </header>
+
+            <!-- 뷰 탭 네비게이션 -->
+            <div class="tab-bar">
+                <button class="tab-btn active" data-tab="lessonTab">
+                    <span class="tab-icon">📖</span> 교안 학습
+                </button>
+                <button class="tab-btn" data-tab="playgroundTab">
+                    <span class="tab-icon">💻</span> 파이썬 실습실 (Live Runner)
+                    <span class="tab-badge" id="examplesCountBadge">0</span>
+                </button>
+                <button class="tab-btn" data-tab="quizTab">
+                    <span class="tab-icon">❓</span> 차시별 이해도 퀴즈
+                </button>
+            </div>
+
+            <!-- 탭 1: 교안 마크다운 뷰어 -->
+            <section class="tab-content active" id="lessonTab">
+                <article class="markdown-body" id="markdownViewer">
+                    <div class="loading-spinner">교안을 불러오는 중입니다...</div>
+                </article>
+            </section>
+
+            <!-- 탭 2: 파이썬 인터랙티브 실습실 -->
+            <section class="tab-content" id="playgroundTab">
+                <div class="playground-layout">
+                    <!-- 에디터 영역 -->
+                    <div class="editor-pane">
+                        <div class="pane-header">
+                            <div class="pane-title">
+                                <span>📝 Python 코드 에디터</span>
+                            </div>
+                            <div class="pane-tools">
+                                <select id="exampleSelector" class="example-select">
+                                    <option value="">-- 실습 예제 불러오기 --</option>
+                                </select>
+                                <button class="btn-subtle" id="btnResetCode" title="코드 초기화">비우기</button>
+                            </div>
+                        </div>
+                        <div class="editor-wrapper">
+                            <textarea id="codeEditor" spellcheck="false" placeholder="# 여기에 파이썬 코드를 작성하거나 수정해보세요!
+print('Hello, Python World!')"></textarea>
+                        </div>
+                        <div class="editor-footer">
+                            <span class="editor-tip">단축키: Ctrl + Enter 로 실행 가능</span>
+                            <button class="btn-run" id="btnRunCode">
+                                <span class="run-icon">▶</span> 코드 실행하기
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 터미널 콘솔 출력 영역 -->
+                    <div class="console-pane">
+                        <div class="pane-header">
+                            <div class="pane-title">
+                                <span>🖥️ 실행 결과 (Terminal Console)</span>
+                                <span class="status-indicator" id="runStatusBadge">대기 중</span>
+                            </div>
+                            <button class="btn-subtle" id="btnClearConsole">지우기</button>
+                        </div>
+                        <pre class="console-output" id="consoleOutput"># [코드 실행하기] 버튼을 누르면 이 곳에 결과가 출력됩니다.</pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 탭 3: 차시별 퀴즈 풀기 -->
+            <section class="tab-content" id="quizTab">
+                <div class="quiz-container">
+                    <div class="quiz-card" id="quizCard">
+                        <div class="quiz-badge">💡 핵심 개념 1분 점검</div>
+                        <h3 class="quiz-question" id="quizQuestion">문제를 불러오는 중...</h3>
+                        <div class="quiz-options" id="quizOptions">
+                            <!-- 선택지 동적 생성 -->
+                        </div>
+                        <div class="quiz-feedback" id="quizFeedback" style="display: none;">
+                            <div class="feedback-title" id="feedbackTitle"></div>
+                            <div class="feedback-desc" id="feedbackDesc"></div>
+                        </div>
+                        <button class="btn-quiz-submit" id="btnSubmitQuiz" disabled>정답 제출하기</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 하단 차시 이동 네비게이션 바 -->
+            <footer class="lesson-pager">
+                <button class="btn-nav-pager" id="btnPrevLesson">
+                    <span>← 이전 차시</span>
+                </button>
+                <div class="pager-info" id="pagerInfo">
+                    1 / 16 차시
+                </div>
+                <button class="btn-nav-pager primary" id="btnNextLesson">
+                    <span>다음 차시 →</span>
+                </button>
+            </footer>
+
+        </main>
+    </div>
+
+    <!-- 메인 스크립트 로드 -->
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
